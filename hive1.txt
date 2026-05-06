@@ -1,0 +1,265 @@
+# 📌 HiveQL Flight Information System
+
+---
+
+## 🔹 Start Hive
+
+```bash
+$ hive
+```
+
+---
+
+## 🔹 a) Create, Drop, Alter Tables
+
+```sql
+create database if not exists flight_db;
+use flight_db;
+
+-- Create table
+create table flight(
+    fno int,
+    year int,
+    source varchar(20),
+    destination varchar(20)
+)
+row format delimited
+fields terminated by ','
+lines terminated by '\n'
+stored as textfile;
+
+-- Show tables
+show tables;
+
+-- Describe table
+desc flight;
+
+-- Alter table (add column)
+alter table flight add columns (delay float);
+
+-- Rename table
+alter table flight rename to airline;
+
+-- Drop table (optional)
+-- drop table airline;
+```
+
+---
+
+## 🔹 b) Create External Hive Table
+
+```sql
+create external table airline_ext(
+    fno int,
+    year int,
+    source string,
+    destination string,
+    delay float
+)
+row format delimited
+fields terminated by ','
+lines terminated by '\n'
+stored as textfile';
+```
+
+---
+
+## 🔹 c) Load Data, Insert, Join
+
+### 👉 Create data file
+
+ 
+
+// in other terminal 
+
+  
+
+```bash
+gedit flight.txt
+```
+
+```text
+101,2008,LA,NYC,2.5
+102,2008,NYC,LA,1.0
+103,2008,NYC,DC,3.0
+104,2008,DC,NYC,0.5
+```
+
+---
+
+### 👉 Load data
+
+```sql
+load data local inpath 'flight.txt' overwrite into table airline;
+```
+
+---
+
+### 👉 Insert values
+
+```sql
+insert into airline values (105,2008,'NYC','LA',2.0);
+```
+
+---
+
+### 👉 View data
+
+```sql
+select * from airline;
+```
+
+---
+
+### 👉 Create second table (for JOIN)
+
+```sql
+create table flight_info(
+    fno int,
+    airline_name string
+)
+row format delimited
+fields terminated by ','
+stored as textfile;
+
+insert into flight_info values (101,'AirIndia');
+insert into flight_info values (102,'Indigo');
+insert into flight_info values (103,'SpiceJet');
+```
+
+---
+
+### 👉 Join tables
+
+```sql
+select a.fno, a.source, a.destination, a.delay, b.airline_name
+from airline a
+join flight_info b
+on a.fno = b.fno;
+```
+
+---
+
+## 🔹 d) Create Index
+
+```sql
+create index flight_index
+on table airline(fno)
+as 'org.apache.hadoop.hive.ql.index.compact.CompactIndexHandler'
+with deferred rebuild;
+
+alter index flight_index on airline rebuild;
+```
+
+---
+
+## 🔹 e) Average Departure Delay in 2008
+
+```sql
+select avg(delay) as avg_delay
+from airline
+where year = 2008;
+```
+
+
+
+
+What is the use of INDEX in Hive?
+
+👉 An index is used to speed up query performance.
+
+Instead of scanning the entire table, Hive can:
+
+Use the index
+Quickly find required rows
+🔍 Example (your case)
+create index flight_index
+on table airline(fno)
+as 'org.apache.hadoop.hive.ql.index.compact.CompactIndexHandler';
+
+👉 This creates an index on fno column
+
+So when you run:
+select * from airline where fno = 101;
+
+✔ Without index → Full table scan
+✔ With index → Faster lookup
+
+
+IMPORTANT VIVA QUESTIONS & ANSWERS (ENHANCED)
+
+1. What is Hive?
+   Hive is a data warehouse system built on top of Hadoop that allows users to process and analyze large volumes of structured data. Instead of writing complex programs, users can write simple queries using HiveQL (similar to SQL). Hive converts these queries into Hadoop jobs like MapReduce or Spark for execution.
+   In simple terms, Hive makes big data easy to query using SQL-like commands.
+
+---
+
+2. What is the difference between Internal and External Tables?
+   The key difference is how Hive manages the data.
+
+Internal Table (Managed Table):
+Hive controls both the table structure and the data. If the table is deleted, the data is also permanently deleted.
+
+External Table:
+Hive only manages the table structure, not the data. The data is stored outside Hive, usually in HDFS. If the table is deleted, the data remains safe.
+
+External tables are useful when data should not be deleted accidentally or is shared with other systems.
+
+---
+
+3. What is HiveQL?
+   HiveQL is a SQL-like query language used to interact with Hive. It allows users to create tables, insert data, query data, and perform filtering and aggregation.
+   It is designed to be similar to SQL so that users can easily work with big data.
+
+---
+
+4. What is ROW FORMAT DELIMITED?
+   ROW FORMAT DELIMITED is used while creating a table to define how data is stored in a file. It specifies how columns and rows are separated, such as commas or tabs.
+   For example, if columns are separated by commas, Hive will read the data accordingly.
+
+---
+
+5. What is the use of LOAD DATA?
+   The LOAD DATA command is used to import data into a Hive table. It can load data from the local file system or from HDFS.
+   It is a fast and simple way to move data into Hive.
+
+---
+
+6. What is ALTER TABLE used for?
+   ALTER TABLE is used to modify an existing table. You can add columns, rename the table, or change its properties without deleting it.
+   This makes it easier to update table structures.
+
+---
+
+7. What is JOIN in Hive?
+   JOIN is used to combine data from two or more tables based on a common column.
+   It helps in analyzing relationships between different datasets.
+
+---
+
+8. What is Indexing in Hive?
+   Indexing improves query performance by reducing the amount of data that needs to be scanned.
+   However, in modern Hive, indexing is less commonly used. Instead, partitioning and bucketing are preferred for better performance.
+
+---
+
+9. What is GROUP BY?
+   GROUP BY is used to group rows that have the same values in specified columns.
+   It is often used with functions like SUM, COUNT, and AVG to summarize data.
+
+---
+
+10. How to calculate average delay?
+    You can calculate the average delay using:
+    SELECT AVG(delay) FROM airline;
+
+This calculates the total delay and divides it by the number of records.
+You can also group it by airline to get more detailed results.
+
+---
+
+11. Why are External Tables used?
+    External tables are used to access data stored outside Hive without moving it.
+    They are helpful when data is shared across systems or when you want to prevent accidental data loss.
+
+---
