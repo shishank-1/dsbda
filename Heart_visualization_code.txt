@@ -1,0 +1,184 @@
+HEART DATASET VISUALIZATION CODE
+
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns 
+
+############################################################
+
+heart = pd.read_csv("heart.csv")
+heart.head()
+
+############################################################
+
+avg_chol = heart.groupby('age')['chol'].mean()
+avg_chol.head()
+
+############################################################
+
+plt.plot(avg_chol.index ,avg_chol.values ,marker ='o' , color = 'r')
+# Labels and Title
+plt.title("Age vs Cholesterol Level", fontsize=18, fontweight='bold')
+plt.xlabel("Age", fontsize=14)
+plt.ylabel("Cholesterol", fontsize=14)
+
+# Grid
+plt.grid(True, linestyle='--', alpha=0.6)
+
+############################################################
+
+gender_hd = heart.groupby('sex')['target'].sum()
+gender_hd.head()
+
+############################################################
+
+
+
+labels = ['Female', 'Male']
+# Bar Graph
+plt.bar(labels, gender_hd.values , color = ['red','skyblue'])
+
+# Labels
+plt.xlabel("Gender")
+plt.ylabel("Heart Disease Count")
+plt.title("Gender vs Heart Disease")
+
+# Show Plot
+plt.show()
+
+############################################################
+
+plt.hist(
+    heart['age'],
+    bins=10,
+    color='skyblue',
+    edgecolor='black'
+)
+
+# Labels and Title
+plt.xlabel("Age")
+plt.ylabel("Frequency")
+plt.title("Age Distribution")
+
+# Grid
+plt.grid(axis='y', linestyle='--', alpha=0.5)
+
+# Show Plot
+plt.show()
+
+############################################################
+
+plt.figure(figsize=(8,5))
+
+plt.scatter(
+    heart['trestbps'],
+    heart['chol'],
+    color='mediumseagreen',
+    edgecolor='black',
+    alpha=0.7,
+    s=80
+)
+
+# Labels and Title
+plt.xlabel("Resting Blood Pressure")
+plt.ylabel("Cholesterol")
+plt.title("Resting BP vs Cholesterol")
+
+# Grid
+plt.grid(True, linestyle='--', alpha=0.5)
+
+# Show Plot
+plt.show()
+
+############################################################
+
+# Count Gender
+data = heart['sex'].value_counts()
+Labelslabels = ['Male', 'Female']
+# Pie Chart
+plt.pie(data, labels=labels, autopct='%1.1f%%',shadow=True)
+# Title
+plt.title("Gender Distribution")
+# Show Plotplt.show()
+
+############################################################
+
+plt.boxplot(
+    heart['chol'],
+    patch_artist=True,
+    boxprops=dict(facecolor='skyblue', color='purple'),
+    medianprops=dict(color='red'),
+)
+
+# Labels and Title
+plt.ylabel("Cholesterol")
+plt.title("Cholesterol Distribution")
+
+# Grid
+plt.grid(True, linestyle='--', alpha=0.5)
+
+# Show Plot
+plt.show()
+
+############################################################
+
+# Correlation Matrix
+corr = heart.corr()
+
+# Heatmap
+plt.figure(figsize=(12,8))
+
+sns.heatmap(
+    corr,
+    annot=True,
+    cmap='coolwarm',
+    linewidths=0.5
+)
+
+# Title
+plt.title("Correlation Heatmap")
+
+# Show Plot
+plt.show()
+
+############################################################
+
+# Count Plot
+sns.countplot(x='sex', hue='target', data=heart)
+
+# Labels
+plt.xticks([0,1], ['Female', 'Male'])
+
+# Title and Axis Labels
+plt.title("Gender vs Heart Disease")
+plt.xlabel("Gender")
+plt.ylabel("Count")
+
+# Legend Labels
+plt.legend(['No Disease', 'Heart Disease'])
+
+# Show Plot
+plt.show()
+
+
+
+
+# ### 4. Create Count Plot
+
+# `sns.countplot(x='sex', hue='target', data=df)`
+# Creates a bar graph showing the count of males and females, separated by heart disease category.
+
+# ---
+
+# ### 5. Change X-axis Labels
+
+# `plt.xticks([0,1], ['Female', 'Male'])`
+# Replaces numeric values (0,1) with readable labels Female and Male on the X-axis.
+
+
+############################################################
+
+
+
+############################################################
+
