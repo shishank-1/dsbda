@@ -1,0 +1,290 @@
+-- =========================================
+-- HIVEQL FLIGHT INFORMATION SYSTEM
+-- =========================================
+
+
+-- =========================================
+-- PART A : CREATE, ALTER, DROP TABLES
+-- =========================================
+
+CREATE DATABASE ajay;
+
+USE ajay;
+
+CREATE TABLE flight(
+    fno INT,
+    year INT,
+    dest STRING,
+    delay FLOAT
+);
+
+ALTER TABLE flight RENAME TO air_flight;
+
+ALTER TABLE air_flight ADD COLUMNS(source STRING);
+
+DESC air_flight;
+
+DROP TABLE flight;
+
+SHOW TABLES;
+
+
+
+-- =========================================
+-- CREATE FLIGHT TABLE AGAIN
+-- =========================================
+
+CREATE TABLE flight(
+    fno INT,
+    year INT,
+    des STRING,
+    delay FLOAT
+)
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY ','
+LINES TERMINATED BY '\n'
+STORED AS TEXTFILE;
+
+
+
+-- =========================================
+-- INSERT VALUES
+-- =========================================
+
+INSERT INTO flight VALUES(1,2009,"Pune",5.6);
+
+INSERT INTO flight VALUES(2,2008,"Delhi",4.6);
+
+
+
+-- =========================================
+-- DISPLAY TABLE
+-- =========================================
+
+SELECT * FROM flight;
+
+
+
+-- =========================================
+-- LOAD DATA FROM FILE
+-- =========================================
+
+LOAD DATA LOCAL INPATH 'f.txt'
+OVERWRITE INTO TABLE flight;
+
+
+
+SELECT * FROM flight;
+
+
+
+-- =========================================
+-- CREATE SECOND TABLE FOR JOIN
+-- =========================================
+
+CREATE TABLE nflight(
+    fno INT,
+    year INT,
+    source STRING
+)
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY ','
+LINES TERMINATED BY '\n'
+STORED AS TEXTFILE;
+
+
+
+-- =========================================
+-- INSERT VALUES INTO nflight
+-- =========================================
+
+INSERT INTO nflight VALUES(3,2009,"agra");
+
+
+
+SELECT * FROM nflight;
+
+
+
+-- =========================================
+-- JOIN OPERATION
+-- =========================================
+
+SELECT a.fno,a.year,a.des,a.delay,b.source
+FROM flight a
+JOIN nflight b
+ON a.fno=b.fno;
+
+
+
+-- =========================================
+-- CREATE INDEX
+-- =========================================
+
+CREATE INDEX flight_index
+ON TABLE flight(fno)
+AS 'org.apache.hadoop.hive.ql.index.compact.CompactIndexHandler'
+WITH DEFERRED REBUILD;
+
+
+
+ALTER INDEX flight_index ON flight REBUILD;
+
+
+
+SHOW TABLES;
+
+
+
+-- =========================================
+-- AGGREGATE FUNCTIONS
+-- =========================================
+
+SELECT AVG(delay) FROM flight;
+
+SELECT AVG(delay)
+FROM flight
+WHERE year = 2008;
+
+SELECT * FROM flight WHERE year=2008;
+
+SELECT COUNT(*) FROM flight;
+
+SELECT MAX(delay) FROM flight;
+
+
+
+-- =========================================
+-- PART B : EXTERNAL TABLE
+-- =========================================
+
+CREATE EXTERNAL TABLE hive_ext(
+    id INT,
+    name STRING,
+    sal FLOAT
+)
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY ','
+LINES TERMINATED BY '\n'
+STORED AS TEXTFILE;
+
+
+
+-- =========================================
+-- CREATE INTERNAL TABLE
+-- =========================================
+
+CREATE TABLE hive_int(
+    id INT,
+    name STRING,
+    sal FLOAT
+)
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY ','
+LINES TERMINATED BY '\n'
+STORED AS TEXTFILE;
+
+
+
+-- =========================================
+-- LOAD DATA INTO INTERNAL TABLE
+-- =========================================
+
+LOAD DATA LOCAL INPATH 'data.txt'
+INTO TABLE hive_int;
+
+
+
+SELECT * FROM hive_int;
+
+
+
+-- =========================================
+-- COPY DATA TO EXTERNAL TABLE
+-- =========================================
+
+INSERT INTO hive_ext
+SELECT * FROM hive_int;
+
+
+
+SELECT * FROM hive_ext;
+
+
+
+-- =========================================
+-- HBASE INTEGRATION
+-- =========================================
+
+CREATE EXTERNAL TABLE hive_ext1(
+    id INT,
+    name STRING,
+    sal FLOAT
+)
+STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
+WITH SERDEPROPERTIES(
+"hbase.columns.mapping"=":key,cf:name,cf:sal"
+)
+TBLPROPERTIES(
+"hbase.table.name"="ajay"
+);
+
+
+
+INSERT INTO hive_ext1
+SELECT * FROM hive_int;
+
+
+
+SELECT * FROM hive_ext1;
+
+
+
+-- =========================================
+-- FLIGHT HBASE TABLE
+-- =========================================
+
+CREATE TABLE flights(
+    fno INT,
+    year INT,
+    dest STRING,
+    delay FLOAT
+)
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY ','
+LINES TERMINATED BY '\n'
+STORED AS TEXTFILE;
+
+
+
+LOAD DATA LOCAL INPATH 'f.txt'
+INTO TABLE flights;
+
+
+
+SELECT * FROM flights;
+
+
+
+CREATE EXTERNAL TABLE flight_hbase(
+    fno INT,
+    year INT,
+    dest STRING,
+    delay FLOAT
+)
+STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
+WITH SERDEPROPERTIES(
+"hbase.columns.mapping"=":key,cf:year,cf:dest,cf:delay"
+)
+TBLPROPERTIES(
+"hbase.table.name"="aj1"
+);
+
+
+
+INSERT INTO flight_hbase
+SELECT * FROM flights;
+
+
+
+SELECT * FROM flight_hbase;

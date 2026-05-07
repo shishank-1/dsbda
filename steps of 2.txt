@@ -1,0 +1,110 @@
+// create project in eclipse 
+
+// file -> java project -> give name WordCount -> finish
+
+// right click WordCount -> new -> package -> give name WordCount -> finish
+
+// again right click on WordCount -> new -> class -> give name WordCount -> include main function -> finish 
+
+// write code in WordCount 
+
+
+import java.io.*;
+import java.util.*;
+
+import org.apache.hadoop.conf.*;
+import org.apache.hadoop.fs.*;
+import org.apache.hadoop.io.*;
+
+import org.apache.hadoop.mapreduce.*;
+import org.apache.hadoop.mapreduce.lib.input.*;
+import org.apache.hadoop.mapreduce.lib.output.*;
+
+public class WordCount {
+    public static class Map extends Mapper<Object, Text, Text, IntWritable> {
+
+        public void map(Object key, Text value, Context context) throws IOException, InterruptedException {
+
+            StringTokenizer tokenizer = new StringTokenizer(value.toString());
+            
+            while (tokenizer.hasMoreTokens()) {
+                context.write(new Text(tokenizer.nextToken()), new IntWritable(1));
+            }
+        }
+    }
+    public static class Reduce extends Reducer<Text, IntWritable, Text, IntWritable> {
+        int max = Integer.MIN_VALUE;
+        String maxKey = "";
+        public void reduce(Text key, Iterable<IntWritable> values, Context context) throws IOException, InterruptedException {
+
+            int sum = 0;
+            for (IntWritable val : values) {
+                sum += val.get();
+            }
+            context.write(key, new IntWritable(sum));
+            if (sum > max) {
+                max = sum;
+                maxKey = key.toString();
+            }
+        }
+        @Override 
+        protected void cleanup(Context context) throws IOException, InterruptedException {
+            context.write(new Text("max-> "  + maxKey), new IntWritable(max));
+        }
+    }
+    public static void main(String[] args) throws Exception {
+        Job job = Job.getInstance(new Configuration());
+        job.setJarByClass(WordCount.class);
+        job.setMapperClass(Map.class);
+        job.setReducerClass(Reduce.class);
+        job.setNumReduceTasks(1);
+        job.setOutputKeyClass(Text.class);
+        job.setOutputValueClass(IntWritable.class);
+        FileInputFormat.addInputPath(job, new Path(args[0]));
+        FileOutputFormat.setOutputPath(job, new Path(args[1]));
+        job.waitForCompletion(true);
+    }
+}
+
+
+
+
+// right click on project again -> build path -> add externmaal lib -> usr -> lib -> Hadoop -> hadoop-common-2.6.0-cdh5.4.2.jar 
+// then again link -> usr -> lib -> Hadoop-0.20-mapreduce -> hadoop-core-2.6.0.mr1-cdh5.4.2.jar
+
+
+// export 
+// right click on project -> export -> java -> jar -> brouse -> WordCount.jar -> next -> next -> finish 
+
+
+
+
+
+
+
+# GO TO DESKTOP
+cd Desktop
+
+# CHECK FILES
+ls
+
+# CHECK HDFS FILES
+hadoop fs -ls
+
+# IF alias.txt IS NOT PRESENT THEN UPLOAD FILE
+hadoop fs -put file_name.txt alias.txt
+
+# RUN WORDCOUNT PROGRAM
+hadoop jar WordCount.jar WordCount.WordCount alias.txt Dir5
+
+# IF OUTPUT DIRECTORY ALREADY EXISTS THEN DELETE IT
+hadoop fs -rm -r Dir5
+
+# RUN AGAIN
+hadoop jar WordCount.jar WordCount.WordCount alias.txt Dir5
+
+# CHECK OUTPUT DIRECTORY
+hadoop fs -ls Dir5
+
+# VIEW FINAL OUTPUT
+hadoop fs -cat Dir5/part-r-00000

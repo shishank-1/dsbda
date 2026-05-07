@@ -1,0 +1,132 @@
+import pandas as pd
+
+# Load dataset
+data = pd.read_csv('fb.csv')
+
+# Basic info
+print(type(data))
+print(data.shape)
+
+# View data
+print(data.head())
+print(data.tail())
+
+# -------------------------------
+# Subsetting using iloc
+# -------------------------------
+print(data.iloc[2:10, :])
+print(data.iloc[2:10, 1:5])
+
+x = data.iloc[2:10, 1:5]
+print(x.shape)
+
+print(data.iloc[:10, :5])
+print(data.iloc[12:, 10:])
+print(data.iloc[12, :])
+
+# Selecting columns
+print(data.iloc[:, 6])
+print(data.iloc[:, 18])
+
+# Specific rows & columns
+print(data.iloc[12:20, 18])
+print(data.iloc[12:20, [2, 5, 11, 13]])
+
+# Excluding last 12 columns
+print(data.iloc[:, :-12])
+
+# -------------------------------
+# Using loc
+# -------------------------------
+print(data.loc[:, 'Type'])
+print(data.loc[:, ['Type', 'like', 'comment']])
+print(data.loc[100:110, ['Type', 'like', 'comment']])
+
+# Column names
+print(data.columns)
+
+# -------------------------------
+# Custom row selection
+# -------------------------------
+x = []
+x.extend(range(2, 21))
+x.extend(range(50, 70))
+
+print(data.iloc[x, 2:6])
+
+# -------------------------------
+# Creating subset
+# -------------------------------
+X = data[['Type', 'Category', 'comment', 'like', 'share']]
+print(X.shape)
+print(X.head())
+
+# -------------------------------
+# Filtering data
+# -------------------------------
+Z = X[X['like'] > 100]
+print(Z.shape)
+print(Z.head())
+
+Z = X[(X['like'] > 100) & (X['share'] > 40)]
+print(Z.shape)
+print(Z.head())
+
+# -------------------------------
+# Sort Data  ✅ (ADDED PART)
+# -------------------------------
+
+# Sort by 'like' (descending)
+sorted_data = data.sort_values(by='like', ascending=False)
+print("\nSorted by like (descending):")
+print(sorted_data.head())
+
+# Sort by multiple columns
+sorted_multi = data.sort_values(by=['Type', 'Post Month'], ascending=True)
+print("\nSorted by Type and Post Month:")
+print(sorted_multi.head())
+
+# -------------------------------
+# Save output
+# -------------------------------
+Z.to_csv('output.csv', index=False)
+Z.to_html('output.html', index=False)
+
+# -------------------------------
+# Merge data
+# -------------------------------
+newdata = pd.read_csv('newfb.csv')
+print(newdata.shape)
+
+merged = pd.concat([data, newdata])
+print(merged.shape)
+
+# -------------------------------
+# Drop columns
+# -------------------------------
+Y = data.drop(['Type', 'comment', 'Category'], axis=1)
+print(Y.shape)
+print(Y.head())
+
+# -------------------------------
+# Transpose
+# -------------------------------
+Y = Z.T
+print(Y.shape)
+
+# -------------------------------
+# Melt (reshape)
+# -------------------------------
+print(Z.melt())
+print(Z.melt(id_vars='Category'))
+
+# -------------------------------
+# Explore functions
+# -------------------------------
+print(dir(Z))
+
+# -------------------------------
+# One-hot encoding
+# -------------------------------
+Y = pd.get_dummies(Z)
+print(Y.head())
